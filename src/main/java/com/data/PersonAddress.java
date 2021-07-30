@@ -1,17 +1,22 @@
 package com.data;
 
+import lombok.Getter;
+import lombok.Setter;
 
 public class PersonAddress extends Address {
+    @Getter @Setter
     private String name;
 
-    public void setName(String name) {
-        this.name = name;
+    public PersonAddress() {
+        super();
+    }
+    public PersonAddress(String name) {
+        super();
     }
 
-    public String getName() {
-        return name;
+    public PersonAddress(String name, String address) {
+        super();
     }
-
 
     public static PersonAddress fromCsv(String row){
         String[] values = row.split(",");

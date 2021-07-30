@@ -9,5 +9,5 @@ public interface AddressDataService<E> {
 
 	List<String> getAllAddressList() throws IOException;
 
-	List<PersonAddress> getNearestAddressList(String address, int number);
+	List<PersonAddress> getNearestAddressList(String address, int number) throws IOException;
 }

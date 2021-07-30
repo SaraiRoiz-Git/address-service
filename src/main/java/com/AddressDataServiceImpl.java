@@ -10,7 +10,6 @@ import org.springframework.stereotype.Service;
 import javax.annotation.PostConstruct;
 import java.io.*;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -21,10 +20,18 @@ public class AddressDataServiceImpl implements AddressDataService {
 	String key;
 	@Value( "${filename}" )
 	String fileName;
+	private int index=0;
 	List<PersonAddress> addressList = new ArrayList<>();
 
-	public AddressDataServiceImpl(){
-//		createListOfAddress();
+	@PostConstruct
+	private void createListOfAddress() throws IOException {
+		URL filePath = getClass().getClassLoader().getResource(fileName);
+		BufferedReader csvReader = new BufferedReader(new FileReader(filePath.getPath()));
+		String row = csvReader.readLine();
+		while ((row = csvReader.readLine()) != null) {
+			addressList.add(PersonAddress.fromCsv(row));
+		}
+		csvReader.close();
 	}
 
 	@Override
@@ -35,24 +42,18 @@ public class AddressDataServiceImpl implements AddressDataService {
 		return addressOnlyList;
 	}
 
-	@PostConstruct
-	private void createListOfAddress() throws IOException {
-		URL filePath = getClass().getClassLoader().getResource(fileName);
-		BufferedReader csvReader = new BufferedReader(new FileReader(filePath.getPath()));
-			String row =csvReader.readLine();
-			while ((row = csvReader.readLine()) != null) {
-				addressList.add(PersonAddress.fromCsv(row));
-			}
-			csvReader.close();
-	}
+
 
 	@Override
-	public List<PersonAddress> getNearestAddressList(String address, int number) {
+	public List<PersonAddress> getNearestAddressList(String address, int number) throws IOException {
+		while (index> addressList.size()){
+			getDistanceListFromGoogleapis(address,appendAddress());
+		}
 
 		return null;
 	}
 
-	private int getDistanceListFromGoogleapis(String origins , String destinations) throws IOException {
+	private void getDistanceListFromGoogleapis(String origins , String destinations) throws IOException {
 	URL url = new URL("https://maps.googleapis.com/maps/api/distancematrix/json");
 		HttpURLConnection con = (HttpURLConnection) url.openConnection();
 		con.setRequestMethod("GET");
@@ -73,9 +74,22 @@ public class AddressDataServiceImpl implements AddressDataService {
 
 
 
+//
+//		https://maps.googleapis.com/maps/api/distancematrix/json?origins=Boston,MA|Charlestown,MA&destinations=Lexington,MA|Concord,MA&departure_time=now&key=YOUR_API_KEY
+//		return 4;
+//
 
-		https://maps.googleapis.com/maps/api/distancematrix/json?origins=Boston,MA|Charlestown,MA&destinations=Lexington,MA|Concord,MA&departure_time=now&key=YOUR_API_KEY
-		return 4;
+	}
+
+	private String appendAddress(){
+		StringBuilder destanation = new StringBuilder();
+		while (destanation.length() + addressList.get(index).getAddress().length() < 7500 && index< addressList.size()){
+			destanation.append(addressList.get(index).getAddress());
+			destanation.append('|');
+			index++;
+		}
+		destanation.delete(destanation.length()-1,1);
+		return destanation.toString();
 	}
 }
 
