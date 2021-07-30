@@ -15,7 +15,7 @@ public class PersonAddress extends Address {
     }
 
     public PersonAddress(String name, String address) {
-        super();
+        super(address);
     }
 
     public static PersonAddress fromCsv(String row){
