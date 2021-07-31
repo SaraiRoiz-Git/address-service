@@ -8,9 +8,9 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.List;
 import java.util.Set;
-
+@CrossOrigin(origins = "*")
 @RestController
-@RequestMapping(consumes = "application/json",produces = "application/json",path = "/api/address" )
+@RequestMapping(produces = "application/json",path = "/api/address" )
 public class AddressController {
 
 	private AddressDataService addressDataService;
@@ -20,11 +20,7 @@ public class AddressController {
 		this.addressDataService = addressDataService;
 	}
 
-	@GetMapping("/address-list")
-	public Set<String> countGivenWordInFile() throws IOException {
-		return addressDataService.getAllAddressList();
-	}
-	
+	@CrossOrigin
 	@GetMapping ("/nearby-address-list")
 	public List<PersonAddress> replaceGivenWordInFile(@RequestParam String address, @RequestParam int number) throws IOException, URISyntaxException {
 		return addressDataService.getNearestAddressList(address,number);

@@ -1,23 +1,37 @@
 package com.data;
-
-import lombok.Getter;
-import lombok.Setter;
-
 import java.util.Arrays;
 
-public class PersonAddress extends Address {
-    @Getter @Setter
+public class PersonAddress {
+
     private String name;
+    private String address;
 
     public PersonAddress() {
         super();
     }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getAddress() {
+        return address;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
+    }
+
     public PersonAddress(String name) {
         super();
     }
 
     public PersonAddress(String name, String address) {
-        super(address);
+        this.address = address;
         this.name=name;
     }
 

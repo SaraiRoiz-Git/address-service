@@ -8,8 +8,5 @@ import java.util.List;
 import java.util.Set;
 
 public interface AddressDataService<E> {
-
-	Set<String> getAllAddressList() throws IOException;
-
 	List<PersonAddress> getNearestAddressList(String address, int number) throws IOException, URISyntaxException;
 }

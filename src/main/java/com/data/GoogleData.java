@@ -1,19 +1,17 @@
 package com.data;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import lombok.Getter;
-import lombok.Setter;
 
 import java.util.List;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class GoogleData{
 
-    public List<String> destination_addresses;
-    public List<String> origin_addresses;
-    public List<Row> rows;
-    public String status;
+    private List<String> destination_addresses;
+    private List<String> origin_addresses;
+    private List<Row> rows;
+    private String status;
 
-    public GoogleData() {
+    private GoogleData() {
     }
 
     public List<String> getDestination_addresses() {
@@ -49,9 +47,9 @@ public class GoogleData{
     }
 
     public static class Row{
-        public List<Element> elements;
+        private List<Element> elements;
 
-        public Row() {
+        private Row() {
         }
 
         public List<Element> getElements() {
@@ -64,10 +62,10 @@ public class GoogleData{
     }
 
     public static class Distance{
-        public String text;
-        public int value;
+        private String text;
+        private int value;
 
-        public Distance() {
+        private Distance() {
         }
 
         public String getText() {
@@ -88,10 +86,10 @@ public class GoogleData{
     }
 
     public static class Duration{
-        public String text;
-        public int value;
+        private String text;
+        private int value;
 
-        public Duration() {
+        private Duration() {
         }
 
         public String getText() {
@@ -112,11 +110,11 @@ public class GoogleData{
     }
 
     public static class Element{
-        public Distance distance;
-        public Duration duration;
-        public String status;
+        private Distance distance;
+        private Duration duration;
+        private String status;
 
-        public Element() {
+        private Element() {
         }
 
         public Distance getDistance() {

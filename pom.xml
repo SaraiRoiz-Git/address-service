@@ -43,10 +43,9 @@
 			<version>0.6</version>
 		</dependency>
 		<dependency>
-			<groupId>org.projectlombok</groupId>
-			<artifactId>lombok</artifactId>
-			<version>1.18.20</version>
-			<scope>provided</scope>
+			<groupId>com.thetransactioncompany</groupId>
+			<artifactId>cors-filter</artifactId>
+			<version>2.10</version>
 		</dependency>
 		<dependency>
 			<groupId>com.squareup.okhttp3</groupId>
