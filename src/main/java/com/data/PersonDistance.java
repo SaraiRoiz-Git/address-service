@@ -25,6 +25,12 @@ public class PersonDistance extends PersonAddress  {
         this.distanceText = distanceText;
     }
 
+    public PersonDistance(String name, String address, int distanceValue, String distanceText) {
+        super(name, address);
+        this.distanceValue = distanceValue;
+        this.distanceText = distanceText;
+    }
+
     public PersonDistance(String name, String address) {
         super(name, address);
     }
