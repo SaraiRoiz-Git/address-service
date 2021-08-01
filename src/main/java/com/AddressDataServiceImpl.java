@@ -22,19 +22,19 @@ public class AddressDataServiceImpl implements AddressDataService {
     String key;
     @Value("${filename}")
     String fileName;
-
-    Map<String, String> GoogleAddressToPersonMap = new LinkedHashMap<>();
+    private Map<String, String> addressToPersonMap = new LinkedHashMap<>();
+    private Map<String, String> GoogleAddressToPersonMap = new LinkedHashMap<>();
     private ObjectMapper mapper = new ObjectMapper();
 
     @PostConstruct
     private void createListOfAddress() throws IOException, URISyntaxException {
+
         Map<String, String> addressToPersonMap = createAddressMapFromFile();
         createGoogleAddressList(addressToPersonMap);
     }
 
     private Map<String, String> createAddressMapFromFile() throws IOException {
-        Map<String, String> addressToPersonMap = new LinkedHashMap<>();
-        URL filePath = getClass().getClassLoader().getResource(fileName);
+        URL filePath = getClass().getClassLoader().getResource( fileName);
         BufferedReader csvReader = new BufferedReader(new FileReader(filePath.getPath()));
         String row = csvReader.readLine();
         while ((row = csvReader.readLine()) != null) {
@@ -66,7 +66,7 @@ public class AddressDataServiceImpl implements AddressDataService {
     @Override
     public List<PersonDistance> getNearestAddressList(String address, int number) throws IOException, URISyntaxException {
         List<PersonDistance> personDistances = new LinkedList<>();
-        List<String> addressSet = new ArrayList<>(GoogleAddressToPersonMap.keySet());
+        List<String> addressSet = new ArrayList<>(addressToPersonMap.keySet());
         List<GoogleData> googleResponse = getGoogleAddresses(addressSet, GoogleAddressToPersonMap.size(), address);
         googleResponse.forEach(response -> personDistances.addAll(createListOfClosetAddress(response)));
         personDistances.sort(Comparator.comparing(PersonDistance::getDistanceValue));
@@ -100,8 +100,7 @@ public class AddressDataServiceImpl implements AddressDataService {
 
     private GoogleData getDistanceListFromGoogleapis(String origins, String destinations) throws IOException, URISyntaxException {
         URI uri = getUri(origins, destinations);
-        OkHttpClient client = new OkHttpClient().newBuilder()
-                .build();
+        OkHttpClient client = new OkHttpClient().newBuilder().build();
         Request request = getRequest(uri);
         Response response = client.newCall(request).execute();
         String responseString = response.body().string();
