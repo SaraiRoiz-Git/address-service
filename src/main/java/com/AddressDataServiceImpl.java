@@ -22,18 +22,19 @@ public class AddressDataServiceImpl implements AddressDataService {
     String key;
     @Value("${filename}")
     String fileName;
-    private Map<String, String> addressToPersonMap = new LinkedHashMap<>();
+
     private Map<String, String> GoogleAddressToPersonMap = new LinkedHashMap<>();
+    private List<String> addressSet;
     private ObjectMapper mapper = new ObjectMapper();
 
     @PostConstruct
     private void createListOfAddress() throws IOException, URISyntaxException {
-
-        Map<String, String> addressToPersonMap = createAddressMapFromFile();
+        Map<String, String> addressToPersonMap = new LinkedHashMap<>();
+        addressToPersonMap = createAddressMapFromFile(addressToPersonMap);
         createGoogleAddressList(addressToPersonMap);
     }
 
-    private Map<String, String> createAddressMapFromFile() throws IOException {
+    private Map<String, String> createAddressMapFromFile( Map<String, String> addressToPersonMap ) throws IOException {
         URL filePath = getClass().getClassLoader().getResource( fileName);
         BufferedReader csvReader = new BufferedReader(new FileReader(filePath.getPath()));
         String row = csvReader.readLine();
@@ -46,7 +47,7 @@ public class AddressDataServiceImpl implements AddressDataService {
     }
 
     private void createGoogleAddressList(Map<String, String> addressToPersonMap) throws IOException, URISyntaxException {
-        List<String> addressSet = new LinkedList<>(addressToPersonMap.keySet());
+        addressSet = new LinkedList<>(addressToPersonMap.keySet());
         List<GoogleData> googleResponse = getGoogleAddresses(addressSet, addressSet.size(), "london");
         createGoogleAddressMap(googleResponse, addressSet, addressToPersonMap);
     }
@@ -66,7 +67,6 @@ public class AddressDataServiceImpl implements AddressDataService {
     @Override
     public List<PersonDistance> getNearestAddressList(String address, int number) throws IOException, URISyntaxException {
         List<PersonDistance> personDistances = new LinkedList<>();
-        List<String> addressSet = new ArrayList<>(addressToPersonMap.keySet());
         List<GoogleData> googleResponse = getGoogleAddresses(addressSet, GoogleAddressToPersonMap.size(), address);
         googleResponse.forEach(response -> personDistances.addAll(createListOfClosetAddress(response)));
         personDistances.sort(Comparator.comparing(PersonDistance::getDistanceValue));
