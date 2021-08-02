@@ -30,7 +30,7 @@ public class AddressDataServiceImpl implements AddressDataService {
 
     @PostConstruct
     private void createListOfAddress() throws IOException, URISyntaxException {
-        Map<String, String>addressToPersonMap = createAddressMapFromFile();
+        Map<String, String> addressToPersonMap = createAddressMapFromFile();
         List<String>addressSet = new LinkedList<>(addressToPersonMap.keySet());
         createListOfAppendedAddresses(addressSet);
         createGoogleAddressList(addressToPersonMap,addressSet);
@@ -71,18 +71,6 @@ public class AddressDataServiceImpl implements AddressDataService {
             appendAddresses.add(currAppendAddress);
         }
     }
-
-//    @NotNull
-//    private List<GoogleData> getGoogleAddresses(List<String> addressSet, String location) throws IOException, URISyntaxException {
-//        List<GoogleData> googleResponse = new LinkedList<>();
-//        int index = 0;
-//        while (index < addressSet.size()) {
-//            AppendAddress appendAddress = appendAddress(addressSet, index);
-//            index = appendAddress.getIndex();
-//            googleResponse.add(getDistanceListFromGoogleapis(location, appendAddress.getAddress()));
-//        }
-//        return googleResponse;
-//    }
 
     @Override
     public List<PersonDistance> getNearestAddressList(String address, int number) throws IOException, URISyntaxException {
@@ -144,7 +132,7 @@ public class AddressDataServiceImpl implements AddressDataService {
                 .addParameter("origins", origins)
                 .addParameter("destinations", destinations)
                 .addParameter("key", "AIzaSyDfRDr-Nsv7zEw2CEsoLuNqEEU6R6nVObQ")
-                .addParameter("region", "UK")
+                .addParameter("region", location)
                 .build();
         return uri;
     }
@@ -152,13 +140,11 @@ public class AddressDataServiceImpl implements AddressDataService {
     private String appendAddressesBlock(List<String> addressSet, int currentIndex) {
         StringBuilder destinations = new StringBuilder();
         int tmpCounter = 0;
-        for (int i = currentIndex; i < addressSet.size() && tmpCounter < 25; i++) {
+        for (int i = currentIndex; i < addressSet.size() && tmpCounter < 25; i++,tmpCounter++) {
             destinations.append(addressSet.get(i));
             destinations.append("|");
         }
         return destinations.toString();
     }
-
-
 }
 
