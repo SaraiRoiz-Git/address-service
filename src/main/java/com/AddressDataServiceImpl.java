@@ -25,13 +25,15 @@ public class AddressDataServiceImpl implements AddressDataService {
     @Value("${location}")
     String location;
     private Map<String, String> GoogleAddressToPersonMap = new LinkedHashMap<>();
-    private List<String> addressSet;
+    private List<String> appendAddresses= new ArrayList<>();
     private ObjectMapper mapper = new ObjectMapper();
 
     @PostConstruct
     private void createListOfAddress() throws IOException, URISyntaxException {
         Map<String, String>addressToPersonMap = createAddressMapFromFile();
-        createGoogleAddressList(addressToPersonMap);
+        List<String>addressSet = new LinkedList<>(addressToPersonMap.keySet());
+        createListOfAppendedAddresses(addressSet);
+        createGoogleAddressList(addressToPersonMap,addressSet);
     }
 
     private Map<String, String> createAddressMapFromFile( ) throws IOException {
@@ -47,28 +49,45 @@ public class AddressDataServiceImpl implements AddressDataService {
         return addressToPersonMap;
     }
 
-    private void createGoogleAddressList(Map<String, String> addressToPersonMap) throws IOException, URISyntaxException {
-        addressSet = new LinkedList<>(addressToPersonMap.keySet());
-        List<GoogleData> googleResponse = getGoogleAddresses(addressSet,location);
+    private void createGoogleAddressList(Map<String, String> addressToPersonMap, List<String>addressSet) throws IOException, URISyntaxException {
+        List<GoogleData> googleResponse = getGoogleAddresses(location);
         createGoogleAddressMap(googleResponse, addressSet, addressToPersonMap);
     }
 
     @NotNull
-    private List<GoogleData> getGoogleAddresses(List<String> addressSet, String location) throws IOException, URISyntaxException {
+    private List<GoogleData> getGoogleAddresses(String location) throws IOException, URISyntaxException {
         List<GoogleData> googleResponse = new LinkedList<>();
-        int index = 0;
-        while (index < addressSet.size()) {
-            AppendAddress appendAddress = appendAddress(addressSet, index);
-            index = appendAddress.getIndex();
-            googleResponse.add(getDistanceListFromGoogleapis(location, appendAddress.getAddress()));
+        for (String list : appendAddresses) {
+            googleResponse.add(getDistanceListFromGoogleapis(location, list));
         }
         return googleResponse;
     }
 
+    private void createListOfAppendedAddresses(List<String> addressSet) {
+        int index = 0;
+        while (index < addressSet.size()) {
+            String currAppendAddress = appendAddressesBlock(addressSet, index);
+            index +=25;
+            appendAddresses.add(currAppendAddress);
+        }
+    }
+
+//    @NotNull
+//    private List<GoogleData> getGoogleAddresses(List<String> addressSet, String location) throws IOException, URISyntaxException {
+//        List<GoogleData> googleResponse = new LinkedList<>();
+//        int index = 0;
+//        while (index < addressSet.size()) {
+//            AppendAddress appendAddress = appendAddress(addressSet, index);
+//            index = appendAddress.getIndex();
+//            googleResponse.add(getDistanceListFromGoogleapis(location, appendAddress.getAddress()));
+//        }
+//        return googleResponse;
+//    }
+
     @Override
     public List<PersonDistance> getNearestAddressList(String address, int number) throws IOException, URISyntaxException {
         List<PersonDistance> personDistances = new LinkedList<>();
-        List<GoogleData> googleResponse = getGoogleAddresses(addressSet, address);
+        List<GoogleData> googleResponse = getGoogleAddresses(address);
         googleResponse.forEach(response -> personDistances.addAll(createListOfClosetAddress(response)));
         personDistances.sort(Comparator.comparing(PersonDistance::getDistanceValue));
         return number > personDistances.size() ? personDistances : personDistances.subList(0, number);
@@ -130,16 +149,14 @@ public class AddressDataServiceImpl implements AddressDataService {
         return uri;
     }
 
-    private AppendAddress appendAddress(List<String> addressSet, int currentIndex) {
+    private String appendAddressesBlock(List<String> addressSet, int currentIndex) {
         StringBuilder destinations = new StringBuilder();
         int tmpCounter = 0;
-        for (int i = currentIndex; i < addressSet.size() && tmpCounter < 25; i++, tmpCounter++) {
+        for (int i = currentIndex; i < addressSet.size() && tmpCounter < 25; i++) {
             destinations.append(addressSet.get(i));
             destinations.append("|");
         }
-        currentIndex += 25;
-
-        return new AppendAddress(destinations.toString(), currentIndex);
+        return destinations.toString();
     }
 
 
