@@ -22,25 +22,26 @@ public class AddressDataServiceImpl implements AddressDataService {
     String key;
     @Value("${filename}")
     String fileName;
-
+    @Value("${location}")
+    String location;
     private Map<String, String> GoogleAddressToPersonMap = new LinkedHashMap<>();
     private List<String> addressSet;
     private ObjectMapper mapper = new ObjectMapper();
 
     @PostConstruct
     private void createListOfAddress() throws IOException, URISyntaxException {
-        Map<String, String> addressToPersonMap = new LinkedHashMap<>();
-        addressToPersonMap = createAddressMapFromFile(addressToPersonMap);
+        Map<String, String>addressToPersonMap = createAddressMapFromFile();
         createGoogleAddressList(addressToPersonMap);
     }
 
-    private Map<String, String> createAddressMapFromFile( Map<String, String> addressToPersonMap ) throws IOException {
+    private Map<String, String> createAddressMapFromFile( ) throws IOException {
+        Map<String, String> addressToPersonMap = new LinkedHashMap<>();
         URL filePath = getClass().getClassLoader().getResource( fileName);
         BufferedReader csvReader = new BufferedReader(new FileReader(filePath.getPath()));
         String row = csvReader.readLine();
         while ((row = csvReader.readLine()) != null) {
-            PersonAddress personAddress = PersonAddress.fromCsv(row);
-            addressToPersonMap.put(personAddress.getAddress(), personAddress.getName());
+            String[] values = row.split(",",2);
+            addressToPersonMap.put(values[1], values[0]);
         }
         csvReader.close();
         return addressToPersonMap;
@@ -48,18 +49,18 @@ public class AddressDataServiceImpl implements AddressDataService {
 
     private void createGoogleAddressList(Map<String, String> addressToPersonMap) throws IOException, URISyntaxException {
         addressSet = new LinkedList<>(addressToPersonMap.keySet());
-        List<GoogleData> googleResponse = getGoogleAddresses(addressSet, addressSet.size(), "london");
+        List<GoogleData> googleResponse = getGoogleAddresses(addressSet,location);
         createGoogleAddressMap(googleResponse, addressSet, addressToPersonMap);
     }
 
     @NotNull
-    private List<GoogleData> getGoogleAddresses(List<String> addressSet, int size, String london) throws IOException, URISyntaxException {
+    private List<GoogleData> getGoogleAddresses(List<String> addressSet, String location) throws IOException, URISyntaxException {
         List<GoogleData> googleResponse = new LinkedList<>();
         int index = 0;
-        while (index < size) {
+        while (index < addressSet.size()) {
             AppendAddress appendAddress = appendAddress(addressSet, index);
             index = appendAddress.getIndex();
-            googleResponse.add(getDistanceListFromGoogleapis(london, appendAddress.getAddress()));
+            googleResponse.add(getDistanceListFromGoogleapis(location, appendAddress.getAddress()));
         }
         return googleResponse;
     }
@@ -67,7 +68,7 @@ public class AddressDataServiceImpl implements AddressDataService {
     @Override
     public List<PersonDistance> getNearestAddressList(String address, int number) throws IOException, URISyntaxException {
         List<PersonDistance> personDistances = new LinkedList<>();
-        List<GoogleData> googleResponse = getGoogleAddresses(addressSet, GoogleAddressToPersonMap.size(), address);
+        List<GoogleData> googleResponse = getGoogleAddresses(addressSet, address);
         googleResponse.forEach(response -> personDistances.addAll(createListOfClosetAddress(response)));
         personDistances.sort(Comparator.comparing(PersonDistance::getDistanceValue));
         return number > personDistances.size() ? personDistances : personDistances.subList(0, number);
@@ -132,13 +133,15 @@ public class AddressDataServiceImpl implements AddressDataService {
     private AppendAddress appendAddress(List<String> addressSet, int currentIndex) {
         StringBuilder destinations = new StringBuilder();
         int tmpCounter = 0;
-        for (int i = currentIndex; i < addressSet.size() && tmpCounter < 15; i++, tmpCounter++) {
+        for (int i = currentIndex; i < addressSet.size() && tmpCounter < 25; i++, tmpCounter++) {
             destinations.append(addressSet.get(i));
             destinations.append("|");
         }
-        currentIndex += 15;
+        currentIndex += 25;
 
         return new AppendAddress(destinations.toString(), currentIndex);
     }
+
+
 }
 
